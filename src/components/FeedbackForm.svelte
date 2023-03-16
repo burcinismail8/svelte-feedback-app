@@ -1,0 +1,91 @@
+<script>
+  import Button from "./Button.svelte";
+  import Card from "./Card.svelte";
+  import RatingSelect from "./RatingSelect.svelte";
+  import { FeedbackStore } from "../stores";
+  import { v4 as uuid } from "uuid";
+  let text = "";
+  let btnDisabled = true;
+  let rating = 10;
+  let min = 10;
+  let message;
+
+  const handleSelect = (e) => (rating = e.detail);
+  const handleInput = (e) => {
+    text = e.target.value;
+    if (text.trim().length < min) {
+      message = `Text must be at least ${min} characters`;
+      btnDisabled = true;
+    } else {
+      message = null;
+      btnDisabled = false;
+    }
+  };
+  const handleSubmit = () => {
+    const newFeedback = {
+      id: uuid(),
+      text,
+      rating: +rating,
+    };
+    FeedbackStore.update((currentFeedback) => {
+      return [newFeedback, ...currentFeedback];
+    });
+    text = "";
+  };
+</script>
+
+<Card>
+  <header>
+    <h2>How would you rate your servie with us?</h2>
+  </header>
+  <form on:submit|preventDefault={handleSubmit}>
+    <RatingSelect on:rating-select={handleSelect} />
+    <div class="input-group">
+      <input
+        on:input={handleInput}
+        bind:value={text}
+        type="text"
+        placeholder="Tell us someting that keeps you coming back"
+      />
+      <Button disabled={btnDisabled} type="submit">Send</Button>
+    </div>
+    {#if message}
+      <div class="message">
+        {message}
+      </div>
+    {/if}
+  </form>
+</Card>
+
+<style>
+  header {
+    max-width: 400px;
+    margin: auto;
+  }
+  header h2 {
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .input-group {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+  }
+  input {
+    flex-grow: 2;
+    border: none;
+    font-size: 16px;
+  }
+  input:focus {
+    outline: none;
+  }
+  .message {
+    padding-top: 10px;
+    text-align: center;
+    color: rebeccapurple;
+  }
+</style>
